@@ -141,15 +141,59 @@ fun CarConnectScreen(viewModel: BluetoothPickerViewModel) {
                 )
                 HorizontalDivider()
             }
+            
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "App Features",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                
+                FeatureItem(icon = "🎵", title = "Auto-play Spotify", description = "Resumes your music playback the moment you connect.")
+                FeatureItem(icon = "🗺️", title = "Launch Navigation", description = "Automatically opens Waze for easy routing.")
+                FeatureItem(icon = "📱", title = "Wake Screen", description = "Turns on the display so you don't have to unlock your phone.")
+                FeatureItem(icon = "🔦", title = "Shake-to-Flashlight", description = "Shake the phone while connected to toggle the flashlight.")
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
 
         Button(
             onClick = { viewModel.testTriggerAutomation() },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
+                .padding(top = 8.dp)
         ) {
             Text("Test Trigger Automation")
+        }
+    }
+}
+
+@Composable
+fun FeatureItem(icon: String, title: String, description: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = icon,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(end = 16.dp)
+        )
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
