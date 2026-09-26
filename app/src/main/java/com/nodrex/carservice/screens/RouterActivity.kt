@@ -1,4 +1,4 @@
-package com.nodrex.carservice
+package com.nodrex.carservice.screens
 
 import android.app.KeyguardManager
 import android.content.Context
@@ -76,3 +76,4 @@ class RouterActivity : ComponentActivity() {
         }
     }
 }
+

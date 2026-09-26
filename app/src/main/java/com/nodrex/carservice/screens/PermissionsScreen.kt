@@ -1,4 +1,4 @@
-package com.nodrex.carservice
+package com.nodrex.carservice.screens
 
 import android.Manifest
 import android.app.NotificationManager
@@ -204,3 +204,4 @@ private fun checkBatteryPermission(context: Context): Boolean {
     val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
     return powerManager.isIgnoringBatteryOptimizations(context.packageName)
 }
+

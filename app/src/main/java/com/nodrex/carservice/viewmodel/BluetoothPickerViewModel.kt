@@ -1,5 +1,6 @@
-package com.nodrex.carservice
+package com.nodrex.carservice.viewmodel
 
+import com.nodrex.carservice.data.CarDevicePreferences
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -97,3 +98,5 @@ class BluetoothPickerViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
+

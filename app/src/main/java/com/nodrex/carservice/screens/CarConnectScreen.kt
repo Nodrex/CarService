@@ -1,5 +1,6 @@
-package com.nodrex.carservice
+package com.nodrex.carservice.screens
 
+import com.nodrex.carservice.viewmodel.BluetoothPickerViewModel
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -197,3 +198,5 @@ fun FeatureItem(icon: String, title: String, description: String) {
         }
     }
 }
+
+

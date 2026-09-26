@@ -1,4 +1,4 @@
-package com.nodrex.carservice
+package com.nodrex.carservice.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -47,3 +47,4 @@ class CarDevicePreferences(private val context: Context) {
         }
     }
 }
+

@@ -1,4 +1,4 @@
-package com.nodrex.carservice
+package com.nodrex.carservice.services
 
 import android.companion.CompanionDeviceService
 import android.content.Intent
@@ -18,3 +18,4 @@ class CarCompanionService : CompanionDeviceService() {
         stopService(serviceIntent)
     }
 }
+

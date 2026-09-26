@@ -1,5 +1,7 @@
-package com.nodrex.carservice
+package com.nodrex.carservice.services
 
+import com.nodrex.carservice.R
+import com.nodrex.carservice.screens.RouterActivity
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -170,3 +172,6 @@ class CarAutomationService : Service(), SensorEventListener {
         }
     }
 }
+
+
+

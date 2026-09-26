@@ -46,7 +46,7 @@
         </activity>
 
         <service
-            android:name=".CarCompanionService"
+            android:name=".services.CarCompanionService"
             android:exported="true"
             android:permission="android.permission.BIND_COMPANION_DEVICE_SERVICE">
             <intent-filter>
@@ -55,12 +55,12 @@
         </service>
 
         <service
-            android:name=".CarAutomationService"
+            android:name=".services.CarAutomationService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
 
         <activity
-            android:name=".RouterActivity"
+            android:name=".screens.RouterActivity"
             android:exported="false"
             android:theme="@style/Theme.CarService"
             android:excludeFromRecents="true"
