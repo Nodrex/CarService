@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     
     <color name="splash_background">#FFFFFF</color>
+    <color name="splash_icon_color">#1A1A1A</color>
 </resources>

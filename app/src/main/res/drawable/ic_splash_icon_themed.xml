@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Wi-Fi / Radar Arcs behind car -->
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 45,35 A 32,32 0 0,1 80,45" />
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 50,43 A 22,22 0 0,1 72,50" />
+    <path
+        android:fillColor="@color/splash_icon_color"
+        android:pathData="M 78,54 L 83,51 L 80,57 Z" />
+
+    <!-- Car Body -->
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M 40,68 
+                          L 35,68 
+                          C 32,68 30,65 30,62
+                          L 30,55
+                          C 30,50 35,46 42,46
+                          L 65,46
+                          C 75,46 82,50 86,55
+                          L 88,60
+                          C 89,63 88,66 85,68
+                          L 75,68
+                          M 61,68 L 47,68" />
+                          
+    <!-- Wheels -->
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:pathData="M 39,68 A 4,4 0 1,1 47,68 A 4,4 0 1,1 39,68" />
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:pathData="M 61,68 A 4,4 0 1,1 69,68 A 4,4 0 1,1 61,68" />
+
+    <!-- Car Window Profile -->
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M 42,46 L 50,38 C 55,36 62,36 68,40 L 75,46" />
+        
+    <!-- Speed/Action lines -->
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 30,72 L 45,72 M 55,72 L 85,72 M 90,56 L 94,54 M 91,60 L 95,60 M 90,64 L 94,66" />
+        
+    <!-- Bluetooth Emblem -->
+    <path
+        android:strokeColor="@color/splash_icon_color"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M 23,38 L 43,58 L 33,68 L 33,28 L 43,38 L 23,58" />
+</vector>
