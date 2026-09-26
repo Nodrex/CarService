@@ -1,4 +1,4 @@
-# 🚘 CarConnect (Subaru BT Automation)
+# 🚘 CarConnect
 
 ![Android](https://img.shields.io/badge/Android-35-3DDC84?style=for-the-badge&logo=android)
 ![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin)
