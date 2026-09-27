@@ -25,7 +25,15 @@ class RouterActivity : ComponentActivity() {
             launchSpotify()
             delay(1500)
             launchWaze()
-            AppLogger.log("RouterActivity: Finishing")
+            
+            // Retry Waze launch after 2 seconds to absolutely ensure it starts
+            delay(2000)
+            com.nodrex.carservice.util.AppLogger.log("RouterActivity: Retrying Waze launch just to be sure...")
+            launchWaze()
+            
+            // Wait before finishing so Android doesn't cancel the activity transition
+            delay(1500)
+            com.nodrex.carservice.util.AppLogger.log("RouterActivity: Finishing")
             finish()
         }
     }
@@ -86,18 +94,30 @@ class RouterActivity : ComponentActivity() {
     private fun launchWaze() {
         AppLogger.log("RouterActivity: Launching Waze...")
         try {
-            val wazeIntent = packageManager.getLaunchIntentForPackage("com.waze")?.apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            // Strongest method: Deep link intent to force Waze open
+            val deepLinkIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("waze://")).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                `package` = "com.waze"
             }
-            if (wazeIntent != null) {
-                AppLogger.log("RouterActivity: Launching Waze UI")
-                startActivity(wazeIntent)
-            } else {
-                AppLogger.log("RouterActivity: ERROR - Waze not found on device!")
-            }
+            startActivity(deepLinkIntent)
+            AppLogger.log("RouterActivity: Launched Waze via deep link")
         } catch (e: Exception) {
-            AppLogger.log("RouterActivity: ERROR - $e")
-            e.printStackTrace()
+            AppLogger.log("RouterActivity: Deep link failed, trying package launch intent...")
+            try {
+                val wazeIntent = packageManager.getLaunchIntentForPackage("com.waze")?.apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                }
+                if (wazeIntent != null) {
+                    AppLogger.log("RouterActivity: Launching Waze UI")
+                    startActivity(wazeIntent)
+                } else {
+                    AppLogger.log("RouterActivity: ERROR - Waze not found on device!")
+                }
+            } catch (ex: Exception) {
+                AppLogger.log("RouterActivity: ERROR - $ex")
+                ex.printStackTrace()
+            }
         }
     }
 }
+

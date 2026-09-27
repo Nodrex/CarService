@@ -26,10 +26,23 @@ class CarCompanionService : CompanionDeviceService() {
             e.printStackTrace()
         }
 
+        // Return to Home Screen (Simulate closing Waze)
+        try {
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(homeIntent)
+            com.nodrex.carservice.util.AppLogger.log("CarCompanionService: Returned to home screen")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         val serviceIntent = Intent(this, CarAutomationService::class.java)
         stopService(serviceIntent)
     }
 }
+
 
 
 
