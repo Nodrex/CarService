@@ -21,6 +21,20 @@ import androidx.lifecycle.LifecycleEventObserver
 fun CarConnectScreen(viewModel: BluetoothPickerViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
+    var pendingAssociationAddress by remember { mutableStateOf<String?>(null) }
+    var pendingAssociationName by remember { mutableStateOf<String?>(null) }
+
+    val cdmLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            pendingAssociationAddress?.let { address ->
+                viewModel.handleAssociationResult(address, pendingAssociationName)
+            }
+        }
+        pendingAssociationAddress = null
+        pendingAssociationName = null
+    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -131,8 +145,18 @@ fun CarConnectScreen(viewModel: BluetoothPickerViewModel) {
                     trailingContent = {
                         Switch(
                             checked = isSelected,
-                            onCheckedChange = {
-                                viewModel.toggleTargetDevice(device.address, device.name)
+                            onCheckedChange = { isChecking ->
+                                if (isChecking) {
+                                    pendingAssociationAddress = device.address
+                                    pendingAssociationName = device.name
+                                    viewModel.associateCompanionDevice(device.address, device.name) { intentSender ->
+                                        cdmLauncher.launch(
+                                            androidx.activity.result.IntentSenderRequest.Builder(intentSender).build()
+                                        )
+                                    }
+                                } else {
+                                    viewModel.toggleTargetDevice(device.address, device.name)
+                                }
                             }
                         )
                     },
@@ -160,13 +184,76 @@ fun CarConnectScreen(viewModel: BluetoothPickerViewModel) {
             }
         }
 
-        Button(
-            onClick = { viewModel.testTriggerAutomation() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
+        var showLogs by remember { mutableStateOf(false) }
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Test Trigger Automation")
+            Button(
+                onClick = { viewModel.testTriggerAutomation() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Test Trigger")
+            }
+            OutlinedButton(
+                onClick = { showLogs = true },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("View Logs")
+            }
+        }
+
+        if (showLogs) {
+            LogBottomSheet(onDismiss = { showLogs = false })
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LogBottomSheet(onDismiss: () -> Unit) {
+    val logs by com.nodrex.carservice.util.AppLogger.logs.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("System Logs", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Button(onClick = {
+                    val logText = logs.joinToString("\n")
+                    val clip = android.content.ClipData.newPlainText("CarConnect Logs", logText)
+                    clipboardManager.setPrimaryClip(clip)
+                    android.widget.Toast.makeText(context, "Logs copied!", android.widget.Toast.LENGTH_SHORT).show()
+                }) {
+                    Text("Copy All")
+                }
+            }
+            
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 32.dp)
+            ) {
+                items(logs) { log ->
+                    Text(
+                        text = log,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                }
+            }
         }
     }
 }

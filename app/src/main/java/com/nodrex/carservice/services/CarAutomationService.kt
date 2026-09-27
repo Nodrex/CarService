@@ -50,6 +50,7 @@ class CarAutomationService : Service(), SensorEventListener {
     }
 
     override fun onCreate() {
+        com.nodrex.carservice.util.AppLogger.log("CarAutomationService: Service starting...")
         super.onCreate()
         setupSensorAndCamera()
     }
@@ -74,7 +75,9 @@ class CarAutomationService : Service(), SensorEventListener {
         )
         notificationManager.createNotificationChannel(channel)
 
-        val fullScreenIntent = Intent(this, RouterActivity::class.java)
+        val fullScreenIntent = Intent(this, RouterActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -90,17 +93,26 @@ class CarAutomationService : Service(), SensorEventListener {
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .build()
 
+        com.nodrex.carservice.util.AppLogger.log("CarAutomationService: Calling startForeground...")
         startForeground(
             NOTIFICATION_ID, 
             notification, 
             android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
+
+        try {
+            com.nodrex.carservice.util.AppLogger.log("CarAutomationService: Firing RouterActivity PendingIntent directly...")
+            fullScreenPendingIntent.send()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun acquireWakeLock() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CarService::PartialWakeLock")
         wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
+        com.nodrex.carservice.util.AppLogger.log("CarAutomationService: WakeLock acquired")
     }
     
     private fun setupSensorAndCamera() {
@@ -144,6 +156,7 @@ class CarAutomationService : Service(), SensorEventListener {
         cameraId?.let { id ->
             try {
                 isTorchOn = !isTorchOn
+                com.nodrex.carservice.util.AppLogger.log("CarAutomationService: Toggling torch to $isTorchOn")
                 cameraManager.setTorchMode(id, isTorchOn)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -172,6 +185,7 @@ class CarAutomationService : Service(), SensorEventListener {
         }
     }
 }
+
 
 
 

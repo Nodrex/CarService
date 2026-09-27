@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
+import com.nodrex.carservice.util.AppLogger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -16,6 +17,7 @@ class RouterActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppLogger.log("RouterActivity: Screen wake sequence initiated")
         
         wakeScreen()
         
@@ -23,6 +25,7 @@ class RouterActivity : ComponentActivity() {
             launchSpotify()
             delay(1500)
             launchWaze()
+            AppLogger.log("RouterActivity: Finishing")
             finish()
         }
     }
@@ -44,11 +47,18 @@ class RouterActivity : ComponentActivity() {
     }
 
     private fun launchSpotify() {
-        val mediaIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+        AppLogger.log("RouterActivity: Launching Spotify...")
+        val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
             putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
             `package` = "com.spotify.music"
         }
-        sendOrderedBroadcast(mediaIntent, null)
+        sendOrderedBroadcast(downIntent, null)
+
+        val upIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+            putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
+            `package` = "com.spotify.music"
+        }
+        sendOrderedBroadcast(upIntent, null)
 
         // Fallback: Launch the app to ensure it starts
         try {
@@ -64,6 +74,7 @@ class RouterActivity : ComponentActivity() {
     }
 
     private fun launchWaze() {
+        AppLogger.log("RouterActivity: Launching Waze...")
         try {
             val wazeIntent = packageManager.getLaunchIntentForPackage("com.waze")?.apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
@@ -76,4 +87,3 @@ class RouterActivity : ComponentActivity() {
         }
     }
 }
-

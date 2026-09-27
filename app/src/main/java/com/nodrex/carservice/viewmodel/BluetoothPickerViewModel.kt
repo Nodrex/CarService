@@ -74,6 +74,60 @@ class BluetoothPickerViewModel(
         bluetoothAdapter.getProfileProxy(context, profileListener, BluetoothProfile.HEADSET)
     }
 
+    fun associateCompanionDevice(
+        address: String, 
+        name: String?, 
+        onIntentSender: (android.content.IntentSender) -> Unit
+    ) {
+        com.nodrex.carservice.util.AppLogger.log("ViewModel: Requesting CDM for $address")
+        val cdm = context.getSystemService(Context.COMPANION_DEVICE_SERVICE) as android.companion.CompanionDeviceManager
+        
+        // If already associated, just save and start observing
+        val existingAssociation = cdm.myAssociations.find { it.deviceMacAddress?.toString()?.uppercase() == address.uppercase() }
+        if (existingAssociation != null) {
+            cdm.startObservingDevicePresence(existingAssociation.deviceMacAddress.toString())
+            toggleTargetDevice(address, name)
+            return
+        }
+
+        val deviceFilter = android.companion.BluetoothDeviceFilter.Builder()
+            .setAddress(address)
+            .build()
+
+        val request = android.companion.AssociationRequest.Builder()
+            .addDeviceFilter(deviceFilter)
+            .setSingleDevice(true)
+            .build()
+
+        cdm.associate(request, context.mainExecutor, object : android.companion.CompanionDeviceManager.Callback() {
+            override fun onAssociationPending(intentSender: android.content.IntentSender) {
+                onIntentSender(intentSender)
+            }
+
+            override fun onAssociationCreated(associationInfo: android.companion.AssociationInfo) {
+                com.nodrex.carservice.util.AppLogger.log("ViewModel: CDM Association Created!")
+                cdm.startObservingDevicePresence(associationInfo.deviceMacAddress.toString())
+                toggleTargetDevice(address, name)
+            }
+
+            override fun onFailure(error: CharSequence?) {
+                com.nodrex.carservice.util.AppLogger.log("ViewModel: CDM Association Failed: $error")
+                // Fallback to just saving the target if CDM fails (some custom ROMs)
+                toggleTargetDevice(address, name)
+            }
+        })
+    }
+
+    fun handleAssociationResult(address: String, name: String?) {
+        com.nodrex.carservice.util.AppLogger.log("ViewModel: Requesting CDM for $address")
+        val cdm = context.getSystemService(Context.COMPANION_DEVICE_SERVICE) as android.companion.CompanionDeviceManager
+        val existingAssociation = cdm.myAssociations.find { it.deviceMacAddress?.toString()?.uppercase() == address.uppercase() }
+        if (existingAssociation != null) {
+            cdm.startObservingDevicePresence(existingAssociation.deviceMacAddress.toString())
+        }
+        toggleTargetDevice(address, name)
+    }
+
     fun toggleTargetDevice(address: String, name: String?) {
         viewModelScope.launch {
             preferences.toggleTargetDevice(address, name)
@@ -81,8 +135,9 @@ class BluetoothPickerViewModel(
     }
 
     fun testTriggerAutomation() {
-        // Trigger the foreground service as a test
-        // This will be implemented to start CarAutomationService directly or simulate connection
+        com.nodrex.carservice.util.AppLogger.log("ViewModel: Firing Test Trigger!")
+        val serviceIntent = android.content.Intent(context, com.nodrex.carservice.services.CarAutomationService::class.java)
+        androidx.core.content.ContextCompat.startForegroundService(context, serviceIntent)
     }
 }
 
@@ -98,5 +153,6 @@ class BluetoothPickerViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
 
 

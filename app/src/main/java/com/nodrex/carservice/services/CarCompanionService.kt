@@ -8,14 +8,16 @@ import androidx.core.content.ContextCompat
 class CarCompanionService : CompanionDeviceService() {
 
     override fun onDeviceAppeared(associationInfo: android.companion.AssociationInfo) {
-        Toast.makeText(this, "Car service on (Companion)", Toast.LENGTH_SHORT).show()
+        com.nodrex.carservice.util.AppLogger.log("CarCompanionService: Device connected ($associationInfo)")
         val serviceIntent = Intent(this, CarAutomationService::class.java)
         ContextCompat.startForegroundService(this, serviceIntent)
     }
 
     override fun onDeviceDisappeared(associationInfo: android.companion.AssociationInfo) {
+        com.nodrex.carservice.util.AppLogger.log("CarCompanionService: Device disconnected ($associationInfo)")
         val serviceIntent = Intent(this, CarAutomationService::class.java)
         stopService(serviceIntent)
     }
 }
+
 
