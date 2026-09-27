@@ -1,6 +1,7 @@
 package com.nodrex.carservice.screens
 
 import android.Manifest
+import android.app.AppOpsManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -35,13 +36,15 @@ fun PermissionsScreen(onAllPermissionsGranted: () -> Unit) {
     var hasRuntimePermissions by remember { mutableStateOf(checkRuntimePermissions(context)) }
     var hasFsiPermission by remember { mutableStateOf(checkFsiPermission(context)) }
     var hasBatteryPermission by remember { mutableStateOf(checkBatteryPermission(context)) }
+    var hasUsageStatsPermission by remember { mutableStateOf(checkUsageStatsPermission(context)) }
 
     val updatePermissionsState = {
         hasRuntimePermissions = checkRuntimePermissions(context)
         hasFsiPermission = checkFsiPermission(context)
         hasBatteryPermission = checkBatteryPermission(context)
+        hasUsageStatsPermission = checkUsageStatsPermission(context)
         
-        if (hasRuntimePermissions && hasFsiPermission && hasBatteryPermission) {
+        if (hasRuntimePermissions && hasFsiPermission && hasBatteryPermission && hasUsageStatsPermission) {
             onAllPermissionsGranted()
         }
     }
@@ -126,6 +129,22 @@ fun PermissionsScreen(onAllPermissionsGranted: () -> Unit) {
                 context.startActivity(intent)
             }
         )
+        
+        PermissionCard(
+            title = "Usage Access",
+            description = "Allows the app to check if Waze successfully opened so it can aggressively retry if Android blocks it.",
+            isGranted = hasUsageStatsPermission,
+            onGrantClick = {
+                val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                }
+            }
+        )
     }
 }
 
@@ -205,3 +224,13 @@ private fun checkBatteryPermission(context: Context): Boolean {
     return powerManager.isIgnoringBatteryOptimizations(context.packageName)
 }
 
+private fun checkUsageStatsPermission(context: Context): Boolean {
+    val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), context.packageName)
+    } else {
+        @Suppress("DEPRECATION")
+        appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), context.packageName)
+    }
+    return mode == AppOpsManager.MODE_ALLOWED
+}

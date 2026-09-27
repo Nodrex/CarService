@@ -15,6 +15,12 @@ import kotlinx.coroutines.launch
 
 class RouterActivity : ComponentActivity() {
 
+    companion object {
+        private const val SPOTIFY_MAX_RETRIES = 3
+        private const val WAZE_MAX_RETRIES = 5
+        private const val RETRY_DELAY_MS = 1000L
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppLogger.log("RouterActivity: Screen wake sequence initiated")
@@ -22,17 +28,36 @@ class RouterActivity : ComponentActivity() {
         wakeScreen()
         
         lifecycleScope.launch {
-            launchSpotify()
-            delay(1500)
-            launchWaze()
-            
-            // Check if it started after 1.5 seconds
-            delay(1500)
-            if (!isAppInForeground("com.waze")) {
-                com.nodrex.carservice.util.AppLogger.log("RouterActivity: Waze is NOT in foreground. Doing everything we can to force it...")
+            var spotifyStarted = false
+            for (i in 1..SPOTIFY_MAX_RETRIES) {
+                launchSpotify()
+                delay(RETRY_DELAY_MS)
+                if (isAppInForeground("com.spotify.music")) {
+                    spotifyStarted = true
+                    AppLogger.log("RouterActivity: Spotify successfully launched on try $i")
+                    break
+                }
+                AppLogger.log("RouterActivity: Spotify not detected in foreground, retrying ($i/$SPOTIFY_MAX_RETRIES)...")
+            }
+
+            var wazeStarted = false
+            for (i in 1..WAZE_MAX_RETRIES) {
                 launchWaze()
-            } else {
-                com.nodrex.carservice.util.AppLogger.log("RouterActivity: Verified Waze successfully started.")
+                delay(RETRY_DELAY_MS)
+                if (isAppInForeground("com.waze")) {
+                    wazeStarted = true
+                    com.nodrex.carservice.util.AppLogger.log("RouterActivity: Waze successfully launched on try $i")
+                    break
+                }
+                com.nodrex.carservice.util.AppLogger.log("RouterActivity: Waze not detected in foreground, retrying ($i/$WAZE_MAX_RETRIES)...")
+            }
+            
+            if (!spotifyStarted || !wazeStarted) {
+                com.nodrex.carservice.util.AppLogger.log("RouterActivity: Failed to launch apps after all retries. Opening CarConnect fallback UI.")
+                val fallbackIntent = Intent(this@RouterActivity, com.nodrex.carservice.MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+                startActivity(fallbackIntent)
             }
             
             // Wait before finishing so Android doesn't cancel the activity transition
@@ -149,5 +174,6 @@ class RouterActivity : ComponentActivity() {
         }
     }
 }
+
 
 
