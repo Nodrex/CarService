@@ -48,6 +48,12 @@ class RouterActivity : ComponentActivity() {
 
     private fun launchSpotify() {
         AppLogger.log("RouterActivity: Launching Spotify...")
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
+            audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
+        } catch(e: Exception) {}
+
         val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
             putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
             `package` = "com.spotify.music"
@@ -66,9 +72,13 @@ class RouterActivity : ComponentActivity() {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }
             if (fallbackIntent != null) {
+                AppLogger.log("RouterActivity: Launching Spotify UI")
                 startActivity(fallbackIntent)
+            } else {
+                AppLogger.log("RouterActivity: ERROR - Spotify not found on device!")
             }
         } catch (e: Exception) {
+            AppLogger.log("RouterActivity: ERROR - $e")
             e.printStackTrace()
         }
     }
@@ -80,9 +90,13 @@ class RouterActivity : ComponentActivity() {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }
             if (wazeIntent != null) {
+                AppLogger.log("RouterActivity: Launching Waze UI")
                 startActivity(wazeIntent)
+            } else {
+                AppLogger.log("RouterActivity: ERROR - Waze not found on device!")
             }
         } catch (e: Exception) {
+            AppLogger.log("RouterActivity: ERROR - $e")
             e.printStackTrace()
         }
     }

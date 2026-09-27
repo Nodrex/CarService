@@ -8,6 +8,11 @@
         
     <uses-feature android:name="android.software.companion_device_setup" />
 
+    <queries>
+        <package android:name="com.spotify.music" />
+        <package android:name="com.waze" />
+    </queries>
+
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation"
@@ -71,3 +76,4 @@
     </application>
 
 </manifest>
+
