@@ -26,10 +26,14 @@ class RouterActivity : ComponentActivity() {
             delay(1500)
             launchWaze()
             
-            // Retry Waze launch after 2 seconds to absolutely ensure it starts
-            delay(2000)
-            com.nodrex.carservice.util.AppLogger.log("RouterActivity: Retrying Waze launch just to be sure...")
-            launchWaze()
+            // Check if it started after 1.5 seconds
+            delay(1500)
+            if (!isAppInForeground("com.waze")) {
+                com.nodrex.carservice.util.AppLogger.log("RouterActivity: Waze is NOT in foreground. Doing everything we can to force it...")
+                launchWaze()
+            } else {
+                com.nodrex.carservice.util.AppLogger.log("RouterActivity: Verified Waze successfully started.")
+            }
             
             // Wait before finishing so Android doesn't cancel the activity transition
             delay(1500)
@@ -91,6 +95,31 @@ class RouterActivity : ComponentActivity() {
         }
     }
 
+    private fun isAppInForeground(packageName: String): Boolean {
+        try {
+            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+            val endTime = System.currentTimeMillis()
+            val startTime = endTime - 10000
+            val events = usageStatsManager.queryEvents(startTime, endTime)
+            var currentForegroundApp: String? = null
+            val event = android.app.usage.UsageEvents.Event()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (event.eventType == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED) {
+                    currentForegroundApp = event.packageName
+                } else if (event.eventType == android.app.usage.UsageEvents.Event.ACTIVITY_PAUSED) {
+                    if (currentForegroundApp == event.packageName) {
+                        currentForegroundApp = null
+                    }
+                }
+            }
+            return currentForegroundApp == packageName
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
     private fun launchWaze() {
         AppLogger.log("RouterActivity: Launching Waze...")
         try {
@@ -120,4 +149,5 @@ class RouterActivity : ComponentActivity() {
         }
     }
 }
+
 
