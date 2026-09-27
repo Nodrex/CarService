@@ -71,29 +71,17 @@ class CarAutomationService : Service(), SensorEventListener {
         val channel = NotificationChannel(
             NOTIFICATION_CHANNEL_ID,
             "Car Automation Service",
-            NotificationManager.IMPORTANCE_HIGH
+            NotificationManager.IMPORTANCE_LOW
         )
         notificationManager.createNotificationChannel(channel)
 
-        val fullScreenIntent = Intent(this, RouterActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        val fullScreenPendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            fullScreenIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Car Mode Active")
-            .setContentText("Automating connected device features...")
+            .setContentText("Listening for shake gestures...")
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
 
-        com.nodrex.carservice.util.AppLogger.log("CarAutomationService: Calling startForeground...")
         startForeground(
             NOTIFICATION_ID, 
             notification, 
@@ -101,36 +89,39 @@ class CarAutomationService : Service(), SensorEventListener {
         )
 
         try {
-            com.nodrex.carservice.util.AppLogger.log("CarAutomationService: Firing RouterActivity PendingIntent directly...")
-            fullScreenPendingIntent.send()
+            com.nodrex.carservice.util.AppLogger.log("CarAutomationService: Starting RouterActivity directly via BAL exemption...")
+            val routerIntent = Intent(this, RouterActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(routerIntent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    private fun acquireWakeLock() {
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CarService::PartialWakeLock")
-        wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
-        com.nodrex.carservice.util.AppLogger.log("CarAutomationService: WakeLock acquired")
-    }
-    
     private fun setupSensorAndCamera() {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         accelerometer?.let {
-            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
         }
 
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
             cameraId = cameraManager.cameraIdList.firstOrNull { id ->
-                cameraManager.getCameraCharacteristics(id)
-                    .get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                cameraManager.getCameraCharacteristics(id).get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    @SuppressLint("WakelockTimeout")
+    private fun acquireWakeLock() {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CarService::ShakeWakeLock")
+        wakeLock?.acquire()
+        com.nodrex.carservice.util.AppLogger.log("CarAutomationService: WakeLock acquired")
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -185,6 +176,8 @@ class CarAutomationService : Service(), SensorEventListener {
         }
     }
 }
+
+
 
 
 

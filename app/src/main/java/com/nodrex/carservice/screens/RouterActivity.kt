@@ -18,7 +18,7 @@ class RouterActivity : ComponentActivity() {
     companion object {
         private const val SPOTIFY_MAX_RETRIES = 3
         private const val WAZE_MAX_RETRIES = 5
-        private const val RETRY_DELAY_MS = 1000L
+        private const val RETRY_DELAY_MS = 2500L
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -174,6 +174,7 @@ class RouterActivity : ComponentActivity() {
         }
     }
 }
+
 
 
 
